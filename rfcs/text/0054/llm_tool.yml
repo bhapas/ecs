@@ -1,0 +1,96 @@
+---
+# Standalone YAML for RFC 0054 — LLM Tool Call fields
+# This mirrors the schema in schemas/llm_tool.yml for reviewer reference.
+
+- name: llm_tool
+  title: LLM Tool
+  short: Fields describing LLM tool/function calls and their execution results
+  description: >
+    Fields that describe tool (function) calls made by Large Language Models
+    during agentic workflows.
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      level: extended
+      alpha: true
+    - name: name
+      type: keyword
+      level: extended
+      alpha: true
+    - name: type
+      type: keyword
+      level: extended
+      alpha: true
+      allowed_values: [function, code_interpreter, retrieval, api, browser, mcp]
+    - name: description
+      type: text
+      level: extended
+      alpha: true
+    - name: parameters
+      type: flattened
+      level: extended
+      alpha: true
+    - name: result.content
+      type: text
+      level: extended
+      alpha: true
+    - name: result.status
+      type: keyword
+      level: extended
+      alpha: true
+      allowed_values: [success, error, timeout, denied, rate_limited]
+    - name: result.error.message
+      type: keyword
+      level: extended
+      alpha: true
+    - name: result.error.type
+      type: keyword
+      level: extended
+      alpha: true
+    - name: result.duration_ms
+      type: long
+      level: extended
+      alpha: true
+    - name: result.tokens_used
+      type: long
+      level: extended
+      alpha: true
+    - name: safety.classification
+      type: keyword
+      level: extended
+      alpha: true
+      allowed_values: [safe, suspicious, blocked, unclassified]
+    - name: safety.policy_id
+      type: keyword
+      level: extended
+      alpha: true
+    - name: safety.reason
+      type: keyword
+      level: extended
+      alpha: true
+    - name: chain.id
+      type: keyword
+      level: extended
+      alpha: true
+    - name: chain.step
+      type: integer
+      level: extended
+      alpha: true
+    - name: chain.max_steps
+      type: integer
+      level: extended
+      alpha: true
+    - name: approval.required
+      type: boolean
+      level: extended
+      alpha: true
+    - name: approval.status
+      type: keyword
+      level: extended
+      alpha: true
+      allowed_values: [approved, rejected, pending, auto_approved]
+    - name: approval.reviewer
+      type: keyword
+      level: extended
+      alpha: true

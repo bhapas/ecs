@@ -1,0 +1,218 @@
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# 	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+---
+- name: llm_tool
+  title: LLM Tool
+  group: 2
+  short: Fields describing LLM tool/function calls and their execution results
+  description: >
+    Fields that describe tool (function) calls made by Large Language Models
+    during agentic workflows. Captures the tool invocation, parameters,
+    execution outcome, and safety classification.
+
+    These fields support observability of AI agent systems where models
+    invoke external tools (APIs, databases, code interpreters, etc.) as part
+    of multi-step reasoning chains.
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      description: Unique identifier for this tool call, typically assigned by the LLM provider.
+      example: call_abc123def456
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: name
+      type: keyword
+      description: The name of the tool or function being invoked.
+      example: get_weather_forecast
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: type
+      type: keyword
+      description: The category of tool being invoked.
+      example: function
+      level: extended
+      alpha: This field is alpha and subject to change.
+      allowed_values:
+        - name: function
+          description: A named function with structured parameters.
+        - name: code_interpreter
+          description: An inline code execution environment.
+        - name: retrieval
+          description: A vector/document retrieval system.
+        - name: api
+          description: An external HTTP API call.
+        - name: browser
+          description: A web browsing or scraping tool.
+        - name: mcp
+          description: A Model Context Protocol server tool.
+
+    - name: description
+      type: text
+      description: Human-readable description of the tool's purpose, as provided in the tool schema.
+      example: Retrieves the weather forecast for a given location and date range.
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: parameters
+      type: flattened
+      short: Input parameters passed to the tool call as a JSON object.
+      description: >
+        The input parameters passed to the tool call, as a JSON object.
+        Uses flattened type because tool parameters are heterogeneous and
+        schema-less across different tools — each tool defines its own
+        parameter shape. Leaf values are indexable for search.
+      example: '{"location": "San Francisco", "days": 5, "units": "celsius"}'
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: result.content
+      type: text
+      description: The textual content returned by the tool execution.
+      example: "Current temperature in San Francisco: 18°C, partly cloudy."
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: result.status
+      type: keyword
+      description: The execution outcome status of the tool call.
+      example: success
+      level: extended
+      alpha: This field is alpha and subject to change.
+      allowed_values:
+        - name: success
+          description: Tool executed successfully and returned a result.
+        - name: error
+          description: Tool execution failed with an error.
+        - name: timeout
+          description: Tool execution exceeded its time limit.
+        - name: denied
+          description: Tool execution was blocked by a safety or policy check.
+        - name: rate_limited
+          description: Tool execution was rejected due to rate limiting.
+
+    - name: result.error.message
+      type: keyword
+      description: Error message returned when tool execution fails.
+      example: "API rate limit exceeded. Retry after 30 seconds."
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: result.error.type
+      type: keyword
+      description: Classification of the error encountered during tool execution.
+      example: rate_limit
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: result.duration_ms
+      type: long
+      description: Duration of the tool execution in milliseconds.
+      example: 245
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: result.tokens_used
+      type: long
+      description: Number of tokens consumed by the tool result content when fed back to the model.
+      example: 128
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: safety.classification
+      type: keyword
+      description: Safety classification assigned to this tool call by a guardrail or policy engine.
+      example: safe
+      level: extended
+      alpha: This field is alpha and subject to change.
+      allowed_values:
+        - name: safe
+          description: Tool call passed all safety checks.
+        - name: suspicious
+          description: Tool call flagged for review but allowed to proceed.
+        - name: blocked
+          description: Tool call was blocked by safety policy.
+        - name: unclassified
+          description: No safety classification was performed.
+
+    - name: safety.policy_id
+      type: keyword
+      description: Identifier of the safety policy or guardrail that evaluated this tool call.
+      example: prod-tool-policy-v3
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: safety.reason
+      type: keyword
+      description: Human-readable reason for the safety classification decision.
+      example: "Tool attempts to access filesystem outside sandbox."
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: chain.id
+      type: keyword
+      description: Identifier for the reasoning chain or agent loop this tool call belongs to.
+      example: chain_789xyz
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: chain.step
+      type: integer
+      description: The sequential step number within the reasoning chain (1-based).
+      example: 3
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: chain.max_steps
+      type: integer
+      description: Maximum number of tool-call steps allowed in this chain before forced termination.
+      example: 10
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: approval.required
+      type: boolean
+      description: Whether this tool call required human approval before execution.
+      example: true
+      level: extended
+      alpha: This field is alpha and subject to change.
+
+    - name: approval.status
+      type: keyword
+      description: The human approval decision for this tool call.
+      example: approved
+      level: extended
+      alpha: This field is alpha and subject to change.
+      allowed_values:
+        - name: approved
+          description: Human approved the tool call.
+        - name: rejected
+          description: Human rejected the tool call.
+        - name: pending
+          description: Awaiting human decision.
+        - name: auto_approved
+          description: Automatically approved by policy (no human in loop).
+
+    - name: approval.reviewer
+      type: keyword
+      description: Identity of the human who approved or rejected the tool call.
+      example: ops-team@example.com
+      level: extended
+      alpha: This field is alpha and subject to change.
