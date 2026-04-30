@@ -73,6 +73,7 @@
 
     - name: parameters
       type: flattened
+      short: Input parameters passed to the tool call as a JSON object.
       description: >
         The input parameters passed to the tool call, as a JSON object.
         Uses flattened type because tool parameters are heterogeneous and
